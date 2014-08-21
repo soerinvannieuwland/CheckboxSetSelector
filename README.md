@@ -40,13 +40,10 @@ Insert the widget into your dataview and set the properties.
   - Listen source: The channel to broadcast the clicked object on. This can then be received by the Form Loader on the same channel, which will load the form with the object.
   - Begin empty: The listen will automatically fill the form loader with the first object retrieved. Set this to true to disable this and have the formloader start off empty.
 Add 'Select All' checkbox: If true, a checkbox will be added in the header row to check or uncheck all (default true)
-Data source
-Association: The reference set association, starting from the dataview object.
-Sort attribute: The attribute to sort the list on
-Sort order: The order the list should be sorted in.
-XPath Constraint: An XPath constraint on the possible objects that are shown. Do note that a reference set can contain objects not shown because of this constraint if set elsewhere.
-Limit: A limit to the number of objects shown to prevent the widget from becoming too large. Leave on 0 for unlimited.
-Known bugs
- 
+- Data source
+  - Association: The reference set association, starting from the dataview object.
+  - Sort attribute: The attribute to sort the list on
+  - Sort order: The order the list should be sorted in.
+  - XPath Constraint: An XPath constraint on the possible objects that are shown. Do note that a reference set can contain objects not shown because of this constraint if set elsewhere.
+  - Limit: A limit to the number of objects shown to prevent the widget from becoming too large. Leave on 0 for unlimited.
 
-None
