@@ -6,6 +6,10 @@ This widget lets you use a list of checkboxes for your Reference Set, plain and 
  
 This widget lets you use a list of checkboxes for your Reference Set, plain and simple. It supports multiple display attributes and looks the same as the Reference Set Selector.
 
+## Contributing
+
+For more information on contributing to this repository visit [Contributing to a GitHub repository](https://world.mendix.com/display/howto50/Contributing+to+a+GitHub+repository)!
+
 ## Typical usage scenario
  
 Quickly setting/adjusting a reference set, without having to go through popups and buttons.
@@ -46,4 +50,3 @@ Add 'Select All' checkbox: If true, a checkbox will be added in the header row t
   - Sort order: The order the list should be sorted in.
   - XPath Constraint: An XPath constraint on the possible objects that are shown. Do note that a reference set can contain objects not shown because of this constraint if set elsewhere.
   - Limit: A limit to the number of objects shown to prevent the widget from becoming too large. Leave on 0 for unlimited.
-
