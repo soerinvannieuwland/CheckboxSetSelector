@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<clsMXWidgetSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <WidgetName>CheckboxSetSelector</WidgetName>
+  <SourcePath>C:\Users\pkr\Documents\Development\CheckboxSetSelector\src\</SourcePath>
+  <DestinationPath>C:\Users\pkr\Documents\Development\CheckboxSetSelector\test\</DestinationPath>
+  <Monitor>false</Monitor>
+</clsMXWidgetSettings>
