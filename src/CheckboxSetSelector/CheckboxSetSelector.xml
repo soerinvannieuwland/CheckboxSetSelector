@@ -61,11 +61,16 @@
                 </property>
             </properties>
         </property>
+        <property key="addSelectAll" type="boolean" defaultValue="false">
+            <caption>Select all</caption>
+            <category>Behavior</category>
+            <description>Add a "select all" checkbox to the header row.</description>
+        </property>
         <property key="onChangeMf" type="microflow" required="false" entityProperty="source">
             <caption>On change microflow</caption>
             <category>Behavior</category>
             <description>Microflow to trigger on change.</description>
-            <returnType type="Void"/>
+            <returnType type="Void" />
         </property>
     </properties>
 </widget>

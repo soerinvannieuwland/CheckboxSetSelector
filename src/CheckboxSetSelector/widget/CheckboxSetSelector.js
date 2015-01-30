@@ -153,12 +153,24 @@
                     _handles: [],
 
                     // Extra variables
+                    _selectAllBox: null,
                     _hasStarted: false
                 };
 
 
                 // To be able to just alter one variable in the future we set an internal variable with the domNode that this widget uses.
                 this._data[this.id]._wgtNode = this.domNode;
+                if (this.addSelectAll) {
+
+                    console.log('addSelectAll');
+                    this._data[this.id]._selectAllBox = domConstruct.create('input', {
+                        type: 'checkbox'
+                    });
+
+                    console.log(this._data[this.id]._selectAllBox);
+                    var firstTh = domQuery('.first-th', this._data[this.id]._wgtNode)[0];
+                    domConstruct.place(this._data[this.id]._selectAllBox, firstTh);
+                }
 
             },
 
@@ -173,8 +185,14 @@
             _setupEvents: function () {
 
                 console.log('CheckboxSetSelector - setup events');
-
-                on(domQuery('tr', this._data[this.id]._wgtNode), 'click', lang.hitch(this, function (event) {
+                if (this._data[this.id]._selectAllBox && this.addSelectAll) {
+                    on(domQuery('thead tr', this._data[this.id]._wgtNode), 'click', lang.hitch(this, function (event) {
+                        var tbody = domQuery('tbody', this._data[this.id]._wgtNode)[0];
+                        //toggle all checkboxes when the row is clicked
+                        this._selectAllBoxes(domQuery('input', tbody));
+                    }));
+                }
+                on(domQuery('tbody tr', this._data[this.id]._wgtNode), 'click', lang.hitch(this, function (event) {
                     var row = domQuery(event.target).parent()[0];
                     //toggle the checkbox when the row is clicked
                     this._toggleCheckboxes(domQuery('input', row));
@@ -342,6 +360,26 @@
                         box.checked = true;
                     }
                 });
+            },
+
+            _selectAllBoxes: function (boxes) {
+                console.log('CheckboxSetSelector - (De)select all checkboxes');
+                var self = this,
+                    referenceStr = this.reference.split('/')[0],
+                    refguids = this._data[this.id]._contextObj.getReferences(referenceStr);
+                array.forEach(boxes, function (box) {
+                    if (self._data[self.id]._selectAllBox.checked) {
+                        box.checked = true;
+                        self._setAsReference(domQuery(box).closest('tr')[0].id);
+                    } else {
+                        box.checked = false;
+                        if (refguids) {
+                            self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
+                        }
+                    }
+
+                });
+
             },
 
             _setAsReference: function (guid) {
