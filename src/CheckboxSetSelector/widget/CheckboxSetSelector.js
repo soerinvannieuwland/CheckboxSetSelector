@@ -281,6 +281,9 @@
                 array.forEach(objs, function (obj) {
                     array.forEach(self.displayAttrs, function (attr, index) {
                         obj.fetch(attr.displayAttr, function (value) {
+                            if (attr.currency !== "None") {
+                                value = self._parseCurrency(value, attr);
+                            }
                             data.push({
                                 'obj': obj.getGuid(),
                                 'index': index,
@@ -407,6 +410,8 @@
                 }
             },
 
+            /* Helper functions */
+
             getReferencedBoxes: function () {
                 console.log('CheckboxSetSelector - get referenced boxes');
                 var refguids = this._data[this.id]._contextObj.getReferences(this.reference.split('/')[0]),
@@ -417,7 +422,33 @@
                     });
                 }
                 this._checkCheckboxes(boxes);
+            },
+            
+            _parseCurrency: function (value, attr) {
+                var currency = value;
+                switch (attr.currency) {
+                case 'Euro':
+                    currency = '&#8364 ' + mx.parser.formatNumber(value, attr.useSeparators, attr.decimalPrecision);
+                    break;
+                case 'Dollar':
+                    currency = '&#36 ' + mx.parser.formatNumber(value, attr.useSeparators, attr.decimalPrecision);
+                    break;
+                case 'Yen':
+                    currency = '&#165 ' + mx.parser.formatNumber(value, attr.useSeparators, attr.decimalPrecision);
+
+                    break;
+                case 'Pound':
+                    currency = '&#163 ' + mx.parser.formatNumber(value, attr.useSeparators, attr.decimalPrecision);
+
+                    break;
+                default:
+                    console.log('Error: Currency type not found');
+                    break;
+                    // type not found
+                }
+                return currency;
             }
+
 
         });
     });

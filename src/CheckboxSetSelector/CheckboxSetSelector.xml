@@ -40,7 +40,12 @@
                 <property key="displayWidth" type="integer" defaultValue="45">
                     <caption>Width %</caption>
                     <category>Appearance</category>
-                    <description></description>
+                    <description>The width of the table column</description>
+                </property>
+                <property key="decimalPrecision" type="integer" defaultValue="2">
+                    <caption>Decimal precision</caption>
+                    <category>Currency only</category>
+                    <description>Decimal precision of the attribute, defaults to 2</description>
                 </property>
                 <property key="currency" type="enumeration" defaultValue="None">
                     <caption>Currency type</caption>
