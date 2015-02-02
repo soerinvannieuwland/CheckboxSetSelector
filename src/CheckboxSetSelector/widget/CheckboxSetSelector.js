@@ -229,10 +229,20 @@
                 console.log('CheckboxSetSelector - Load data');
 
                 //default fetch
-                var refEntity = this.reference.split('/')[1];
-                console.log('refEntity: ', refEntity);
+                var refEntity = this.reference.split('/')[1],
+                    filters = {},
+                    xpath = '//' + refEntity;
+
+                filters.sort = [[this.sortAttr, this.sortOrder]];
+                if (this.limit > 0) {
+                    filters.amount = this.limit;
+                }
+                if (this.constraint) {
+                    xpath = '//' + refEntity + this.constraint.replace('[%CurrentObject%]', this._data[this.id]._contextObj);
+                }
                 mx.data.get({
-                    xpath: '//' + refEntity,
+                    xpath: xpath,
+                    filter: filters,
                     callback: lang.hitch(this, function (objs) {
                         this._fetchData(objs);
                     })
@@ -241,6 +251,35 @@
                 // TODO, get aditional data from mendix.
             },
 
+            _setAsReference: function (guid) {
+                console.log('CheckboxSetSelector - set as reference');
+                var referenceStr = this.reference.split('/')[0];
+                this._data[this.id]._contextObj.addReferences(referenceStr, [guid]);
+            },
+
+            _execMf: function (mf, guids) {
+                console.log('CheckboxSetSelector - Execute MF with guids: ', guids);
+                if (mf && guids) {
+                    mx.data.action({
+                        params: {
+                            applyto: 'selection',
+                            actionname: mf,
+                            guids: guids
+                        },
+                        callback: lang.hitch(this, function (obj) {
+                            //TODO what to do when all is ok!
+                        }),
+                        error: function (error) {
+                            console.log(error.description);
+                        }
+                    }, this);
+                }
+            },
+
+            /**
+             * Fetching Data & Building widget
+             * ======================
+             */
             _buildTemplate: function (rows, headers) {
                 //TODO: Load template for each object
                 console.log('CheckboxSetSelector - Build Template');
@@ -281,9 +320,14 @@
                 array.forEach(objs, function (obj) {
                     array.forEach(self.displayAttrs, function (attr, index) {
                         obj.fetch(attr.displayAttr, function (value) {
+                            if (typeof value === 'string') {
+                                value = value.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, ' Warning! Script tags not allowed. ');
+                            }
                             if (attr.currency !== "None") {
                                 value = self._parseCurrency(value, attr);
                             }
+                            
+                            
                             data.push({
                                 'obj': obj.getGuid(),
                                 'index': index,
@@ -296,6 +340,7 @@
                         });
                     });
                 });
+
 
             },
 
@@ -337,6 +382,10 @@
                 this._buildTemplate(rows, headers);
             },
 
+            /**
+             * Checkbox functionality
+             * ======================
+             */
             _toggleCheckboxes: function (boxes) {
                 var self = this,
                     referenceStr = this.reference.split('/')[0],
@@ -382,35 +431,12 @@
                     }
 
                 });
-
             },
 
-            _setAsReference: function (guid) {
-                console.log('CheckboxSetSelector - set as reference');
-                var referenceStr = this.reference.split('/')[0];
-                this._data[this.id]._contextObj.addReferences(referenceStr, [guid]);
-            },
-
-            _execMf: function (mf, guids) {
-                console.log('CheckboxSetSelector - Execute MF with guids: ', guids);
-                if (mf && guids) {
-                    mx.data.action({
-                        params: {
-                            applyto: 'selection',
-                            actionname: mf,
-                            guids: guids
-                        },
-                        callback: lang.hitch(this, function (obj) {
-                            //TODO what to do when all is ok!
-                        }),
-                        error: function (error) {
-                            console.log(error.description);
-                        }
-                    }, this);
-                }
-            },
-
-            /* Helper functions */
+            /**
+             * Helper functions
+             * ======================
+             */
 
             getReferencedBoxes: function () {
                 console.log('CheckboxSetSelector - get referenced boxes');
@@ -423,7 +449,7 @@
                 }
                 this._checkCheckboxes(boxes);
             },
-            
+
             _parseCurrency: function (value, attr) {
                 var currency = value;
                 switch (attr.currency) {
@@ -447,8 +473,11 @@
                     // type not found
                 }
                 return currency;
-            }
+            },
 
+            _checkValue: function (obj, value, attr) {
+                //TODO: ENUM captions
+            }
 
         });
     });

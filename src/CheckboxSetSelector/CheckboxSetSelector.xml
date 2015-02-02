@@ -16,6 +16,37 @@
             <category>Data source</category>
             <description>The reference entity.</description>
         </property>
+        <property key="constraint" type="entityConstraint" entityProperty="reference" required="false">
+            <caption>XPath Constraint</caption>
+            <category>Data source</category>
+            <description>The XPath constraint on the objects.
+            Important: The constraint might hide objects that are already in the ReferenceSet.</description> 
+        </property>
+        <property key="sortAttr" type="attribute" entityProperty="reference">
+            <caption>Sort attribute</caption>
+            <category>Data source</category>
+            <description>The attribute to sort on.</description>
+            <attributeTypes>
+                <attributeType name="String"/>
+                <attributeType name="Integer"/>
+                <attributeType name="Currency"/>
+                <attributeType name="Enum"/>
+            </attributeTypes>
+        </property>
+        <property key="sortOrder" type="enumeration" defaultValue="Asc">
+            <caption>Sort order</caption>
+            <category>Data source</category>
+            <description>The sort order.</description>
+            <enumerationValues>
+                <enumerationValue key="Asc">Ascending</enumerationValue>
+                <enumerationValue key="Desc">Descending</enumerationValue>
+            </enumerationValues>  
+        </property>
+        <property key="limit" type="integer" defaultValue="0">
+            <caption>Limit</caption>
+            <category>Data source</category>
+            <description>A limit for the amount of objects shown. 0 equals no limit.</description> 
+        </property>
         <property key="displayAttrs" type="object" isList="true" required="false">
             <caption>Display attributes</caption>
             <category>Appearance</category>
