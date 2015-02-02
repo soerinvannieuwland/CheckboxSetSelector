@@ -286,7 +286,9 @@
 
                 var tbody = domQuery('tbody', this._data[this.id]._wgtNode)[0],
                     thead = domQuery('thead tr', this._data[this.id]._wgtNode)[0];
-
+                //empty the table
+                domConstruct.empty(tbody);
+                
                 array.forEach(headers, function (header) {
                     var th = domConstruct.create('th', {
                         innerHTML: header
@@ -321,6 +323,7 @@
                     array.forEach(self.displayAttrs, function (attr, index) {
                         obj.fetch(attr.displayAttr, function (value) {
                             if (typeof value === 'string') {
+                                value = mxui.dom.escapeString(value);
                                 value = value.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, ' Warning! Script tags not allowed. ');
                             }
                             if (attr.currency !== "None") {
