@@ -58,9 +58,6 @@
                 // Create childnodes
                 this._createChildNodes();
 
-                // Show message
-                this._showMessage();
-
             },
 
             // Startup is fired after the properties of the widget are set.
@@ -187,15 +184,20 @@
                 console.log('CheckboxSetSelector - setup events');
                 if (this._data[this.id]._selectAllBox && this.addSelectAll) {
                     on(domQuery('thead tr', this._data[this.id]._wgtNode), 'click', lang.hitch(this, function (event) {
+
                         var tbody = domQuery('tbody', this._data[this.id]._wgtNode)[0];
                         //toggle all checkboxes when the row is clicked
                         this._selectAllBoxes(domQuery('input', tbody));
                     }));
                 }
                 on(domQuery('tbody tr', this._data[this.id]._wgtNode), 'click', lang.hitch(this, function (event) {
-                    var row = domQuery(event.target).parent()[0];
-                    //toggle the checkbox when the row is clicked
-                    this._toggleCheckboxes(domQuery('input', row));
+                    if (event.target.tagName.toUpperCase() === 'INPUT') {
+                        this._runReferences(event.target);
+                    } else {
+                        var row = domQuery(event.target).parent()[0];
+                        //toggle the checkbox when the row is clicked
+                        this._toggleCheckboxes(domQuery('input', row));
+                    }
                 }));
 
             },
@@ -288,7 +290,7 @@
                     thead = domQuery('thead tr', this._data[this.id]._wgtNode)[0];
                 //empty the table
                 domConstruct.empty(tbody);
-                
+
                 array.forEach(headers, function (header) {
                     var th = domConstruct.create('th', {
                         innerHTML: header
@@ -321,6 +323,7 @@
 
                 array.forEach(objs, function (obj) {
                     array.forEach(self.displayAttrs, function (attr, index) {
+                        console.log(attr);
                         obj.fetch(attr.displayAttr, function (value) {
                             if (typeof value === 'string') {
                                 value = mxui.dom.escapeString(value);
@@ -329,8 +332,7 @@
                             if (attr.currency !== "None") {
                                 value = self._parseCurrency(value, attr);
                             }
-                            
-                            
+
                             data.push({
                                 'obj': obj.getGuid(),
                                 'index': index,
@@ -434,6 +436,23 @@
                     }
 
                 });
+            },
+
+            _runReferences: function (boxes) {
+                var self = this,
+                    referenceStr = this.reference.split('/')[0],
+                    refguids = this._data[this.id]._contextObj.getReferences(referenceStr);
+                array.forEach(boxes, function (box) {
+                    if (self._data[self.id]._selectAllBox.checked) {
+                        self._setAsReference(domQuery(box).closest('tr')[0].id);
+                    } else {
+                        if (refguids) {
+                            self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
+                        }
+                    }
+
+                });
+                this._execMf(this.onChangeMf, [this._data[this.id]._contextObj.getGuid()]);
             },
 
             /**
