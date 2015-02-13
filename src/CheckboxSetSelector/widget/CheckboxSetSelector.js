@@ -323,7 +323,6 @@
 
                 array.forEach(objs, function (obj) {
                     array.forEach(self.displayAttrs, function (attr, index) {
-                        console.log(attr);
                         obj.fetch(attr.displayAttr, function (value) {
                             if (typeof value === 'string') {
                                 value = mxui.dom.escapeString(value);
@@ -392,6 +391,7 @@
              * ======================
              */
             _toggleCheckboxes: function (boxes) {
+                console.log('CheckboxSetSelector - check checkboxes');
                 var self = this,
                     referenceStr = this.reference.split('/')[0],
                     refguids = this._data[this.id]._contextObj.getReferences(referenceStr);
@@ -399,15 +399,11 @@
                 array.forEach(boxes, function (box) {
                     if (box.checked) {
                         box.checked = false;
-                        if (refguids) {
-                            self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
-                        }
                     } else {
                         box.checked = true;
-                        self._setAsReference(domQuery(box).closest('tr')[0].id);
                     }
                 });
-                this._execMf(this.onChangeMf, [this._data[this.id]._contextObj.getGuid()]);
+                this._runReferences(boxes);
             },
 
             _checkCheckboxes: function (boxes) {
@@ -421,37 +417,46 @@
 
             _selectAllBoxes: function (boxes) {
                 console.log('CheckboxSetSelector - (De)select all checkboxes');
-                var self = this,
-                    referenceStr = this.reference.split('/')[0],
-                    refguids = this._data[this.id]._contextObj.getReferences(referenceStr);
+                var self = this;
                 array.forEach(boxes, function (box) {
                     if (self._data[self.id]._selectAllBox.checked) {
                         box.checked = true;
-                        self._setAsReference(domQuery(box).closest('tr')[0].id);
                     } else {
                         box.checked = false;
-                        if (refguids) {
-                            self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
-                        }
                     }
-
                 });
+                this._runReferences(boxes);
             },
 
             _runReferences: function (boxes) {
+                console.log('CheckboxSetSelector - run references');
                 var self = this,
                     referenceStr = this.reference.split('/')[0],
-                    refguids = this._data[this.id]._contextObj.getReferences(referenceStr);
-                array.forEach(boxes, function (box) {
-                    if (self._data[self.id]._selectAllBox.checked) {
-                        self._setAsReference(domQuery(box).closest('tr')[0].id);
-                    } else {
-                        if (refguids) {
-                            self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
-                        }
-                    }
+                    id = null;
 
-                });
+                if (Array.isArray(boxes)) {
+                    array.forEach(boxes, function (box) {
+                        id = domQuery(box).closest('tr')[0].id;
+                        if (box.checked) {
+                            console.log('checked');
+                            self._setAsReference();
+                        } else {
+                            console.log('CheckboxSetSelector - Remove references');
+                            if (refguids) {
+                                self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
+                            }
+                        }
+                    });
+                } else {
+                    if (boxes.checked) {
+                        console.log('checked');
+                        this._setAsReference(domQuery(boxes).closest('tr')[0].id);
+                    } else {
+                        console.log('CheckboxSetSelector - Remove references');
+                        this._data[this.id]._contextObj.removeReferences(referenceStr, domQuery(boxes).closest('tr')[0].id);
+                        
+                    }
+                }
                 this._execMf(this.onChangeMf, [this._data[this.id]._contextObj.getGuid()]);
             },
 
