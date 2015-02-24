@@ -90,11 +90,11 @@
                         <enumerationValue key="Yen">Yen</enumerationValue>
                     </enumerationValues>
                 </property>
-                <property key="useSeparators" type="boolean" defaultValue="false">
+                <!--property key="useSeparators" type="boolean" defaultValue="false">
                     <caption>Group separators</caption>
                     <category>Currency only</category>
                     <description>Use group separators.</description>
-                </property>
+                </property-->
             </properties>
         </property>
         <property key="addSelectAll" type="boolean" defaultValue="false">
