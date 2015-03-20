@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<widget id="CheckboxSetSelector.widget.CheckboxSetSelector" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+<widget id="CheckboxSelector.widget.checkboxselector" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
     <name>Checkbox Set Selector</name>
     <description>Lets you use a list of objects with checkboxes as reference set selector.</description>
     <icon>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAuklEQVR42qWScQfF IBTF27dNzIxMxtREkpjE7Nu+98q7U+96T0/nj3Vv55wfsYF0akgfpdTj3+KrM1QA KWVzed93DNi2rRmgtcaAdV1/lowxBDJpRgAhxNeytTafkEk7AizLkk3nHIEZdlCZ QQDOeTa99/lMO8ywg9I9AszznM3jONATwAOlDAJM03QHQgj3XN6XPgKM41iFYozk 8670EIAx1vgXEHKeJwZQSpsB13VhQHP7rQrQo27AE+MRcBFOD9LhAAAAAElFTkSu QmCC
     </icon>
     <properties>
-        <property key="source" type="entity" isPath="no">
-            <caption>Source</caption>
-            <category>Data source</category>
-            <description>The datasource entity.</description>
-        </property>
         <property key="reference" type="entity" isPath="yes" pathType="referenceSet">
             <caption>Association</caption>
             <category>Data source</category>
@@ -102,7 +97,7 @@
             <category>Behavior</category>
             <description>Add a "select all" checkbox to the header row.</description>
         </property>
-        <property key="onChangeMf" type="microflow" required="false" entityProperty="source">
+        <property key="onChangeMf" type="microflow" required="false">
             <caption>On change microflow</caption>
             <category>Behavior</category>
             <description>Microflow to trigger on change.</description>

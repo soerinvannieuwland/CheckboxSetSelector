@@ -1,30 +1,14 @@
 /*jslint nomen: true */
 /*global mx, mxui, mendix, dojo, require, console, define, module */
-/**
 
-	CheckboxSetSelector
-	========================
-
-	@file      : CheckboxSetSelector.js
-	@version   : 1.0
-	@author    : ...
-	@date      : Friday, January 23, 2015
-	@copyright : Mendix Technology BV
-	@license   : Apache License, Version 2.0, January 2004
-
-	Documentation
-    ========================
-	Describe your widget here.
-
-*/
 require([
     'dojo/_base/declare', 'mxui/widget/_WidgetBase', 'dijit/_TemplatedMixin',
     'mxui/dom', 'dojo/dom', 'dojo/query', 'dojo/dom-prop', 'dojo/dom-geometry', 'dojo/dom-class', 'dojo/dom-style', 'dojo/on', 'dojo/_base/lang', 'dojo/text',
-    'dojo/_base/array', 'dojo/dom-construct', 'dojo/text!CheckboxSetSelector/widget/template/CheckboxSetSelector.html', 'dojo/NodeList-traverse'
+	'dojo/_base/array', 'dojo/dom-construct', 'dojo/text!CheckboxSelector/widget/template/CheckboxSelector.html', 'dojo/NodeList-traverse'
 ], function (declare, _WidgetBase, _TemplatedMixin, domMx, dom, domQuery, domProp, domGeom, domClass, domStyle, on, lang, text, array, domConstruct, widgetTemplate) {
     'use strict';
     // Declare widget's prototype.
-    return declare('CheckboxSetSelector.widget.CheckboxSetSelector', [_WidgetBase, _TemplatedMixin], {
+	return declare('CheckboxSelector.widget.checkboxselector', [_WidgetBase, _TemplatedMixin], {
         // _TemplatedMixin will create our dom node using this HTML template.
         templateString: widgetTemplate,
         // General variables
@@ -47,9 +31,6 @@ require([
         // PostCreate is fired after the properties of the widget are set.
         postCreate: function () {
 
-            // postCreate
-            console.log('CheckboxSetSelector - postCreate');
-
             // Load CSS ... automaticly from ui directory
 
             // Setup widgets
@@ -66,7 +47,7 @@ require([
 
         update: function (obj, callback) {
             // update
-            console.log('CheckboxSetSelector - update');
+            console.debug('CheckboxSelector - update');
 
             // Release handle on previous object, if any.
             if (this._handles) {
@@ -90,7 +71,7 @@ require([
 
             if (this._contextObj === null) {
                 // Sorry no data no show!
-                console.log('CheckboxSetSelector  - update - We did not get any context object!');
+                console.debug('CheckboxSelector  - update - We did not get any context object!');
             } else {
                 // Subscribe to object updates.
                 this._addSubscriptions();
@@ -137,17 +118,17 @@ require([
          * ======================
          */
         _setupWidget: function () {
-            console.log('CheckboxSetSelector - setup widget');
+            console.debug('CheckboxSelector - setup widget');
 
             // To be able to just alter one variable in the future we set an internal variable with the domNode that this widget uses.
             this._wgtNode = this.domNode;
             if (this.addSelectAll) {
-                console.log('addSelectAll');
+                console.debug('addSelectAll');
                 this._selectAllBox = domConstruct.create('input', {
                     type: 'checkbox'
                 });
 
-                console.log(this._selectAllBox);
+                console.debug(this._selectAllBox);
                 var firstTh = domQuery('.first-th', this._wgtNode)[0];
                 domConstruct.place(this._selectAllBox, firstTh);
             }
@@ -158,13 +139,13 @@ require([
         _createChildNodes: function () {
 
             // Assigning externally loaded library to internal variable inside function.
-            console.log('CheckboxSetSelector - createChildNodes events');
+            console.debug('CheckboxSelector - createChildNodes events');
         },
 
         // Attach events to newly created nodes.
         _setupEvents: function () {
 
-            console.log('CheckboxSetSelector - setup events');
+            console.debug('CheckboxSelector - setup events');
             if (this._selectAllBox && this.addSelectAll) {
                 on(domQuery('thead tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
 
@@ -186,7 +167,7 @@ require([
         },
 
         _addSubscriptions: function () {
-            console.log('CheckboxSetSelector - Add subscriptions');
+            console.debug('CheckboxSelector - Add subscriptions');
             var subHandle = mx.data.subscribe({
                 guid: this._contextObj.getGuid(),
                 callback: lang.hitch(this, function (guid) {
@@ -211,7 +192,7 @@ require([
          * ======================
          */
         _loadData: function () {
-            console.log('CheckboxSetSelector - Load data');
+            console.debug('CheckboxSelector - Load data');
 
             //default fetch
             var refEntity = this.reference.split('/')[1],
@@ -237,13 +218,13 @@ require([
         },
 
         _setAsReference: function (guid) {
-            console.log('CheckboxSetSelector - set as reference');
+            console.debug('CheckboxSelector - set as reference');
             var referenceStr = this.reference.split('/')[0];
             this._contextObj.addReferences(referenceStr, [guid]);
         },
 
         _execMf: function (mf, guids) {
-            console.log('CheckboxSetSelector - Execute MF with guids: ', guids);
+            console.debug('CheckboxSelector - Execute MF with guids: ', guids);
             if (mf && guids) {
                 mx.data.action({
                     params: {
@@ -255,7 +236,7 @@ require([
                         //TODO what to do when all is ok!
                     }),
                     error: function (error) {
-                        console.log(error.description);
+                        console.debug(error.description);
                     }
                 }, this);
             }
@@ -267,7 +248,7 @@ require([
          */
         _buildTemplate: function (rows, headers) {
             //TODO: Load template for each object
-            console.log('CheckboxSetSelector - Build Template');
+            console.debug('CheckboxSelector - Build Template');
 
             var tbody = domQuery('tbody', this._wgtNode)[0],
                 thead = domQuery('thead tr', this._wgtNode)[0];
@@ -282,7 +263,7 @@ require([
             });
 
             array.forEach(rows, function (rowData) {
-                var row = domConstruct.toDom(dojo.cache('CheckboxSetSelector.widget', 'template/CheckboxSetSelector_row.html'));
+                var row = domConstruct.toDom(dojo.cache('CheckboxSelector.widget', 'template/CheckboxSelector_row.html'));
                 row.id = rowData.id;
                 array.forEach(rowData.data, function (value) {
                     var td = domConstruct.create('td', {
@@ -291,15 +272,19 @@ require([
                     domConstruct.place(td, row, 'last');
                 });
                 domConstruct.place(row, tbody);
+//				if(this.readOnly) {
+//					this._setDisabled(domQuery('input', row));
+//				}
             });
 
             this.getReferencedBoxes();
+			
             // Setup events
             this._setupEvents();
         },
 
         _fetchData: function (objs) {
-            console.log('CheckboxSetSelector - Fetch Data');
+            
             var data = [],
                 finalLength = objs.length * this.displayAttrs.length,
                 self = this;
@@ -332,7 +317,7 @@ require([
         },
 
         _processData: function (data) {
-            console.log('CheckboxSetSelector - process data');
+            
             var rowObjs = [],
                 rows = [],
                 headers = [];
@@ -374,7 +359,7 @@ require([
          * ======================
          */
         _toggleCheckboxes: function (boxes) {
-            console.log('CheckboxSetSelector - check checkboxes');
+            
             var self = this,
                 referenceStr = this.reference.split('/')[0],
                 refguids = this._contextObj.getReferences(referenceStr);
@@ -388,9 +373,15 @@ require([
             });
             this._runReferences(boxes);
         },
-
+		
+		_setDisabled : function(boxes) {
+			array.forEach(boxes, function (box) {
+				box.disabled = true;
+			});
+		},
+		
         _checkCheckboxes: function (boxes) {
-            console.log('CheckboxSetSelector - check checkboxes');
+            console.debug('CheckboxSelector - check checkboxes');
             array.forEach(boxes, function (box) {
                 if (!box.checked) {
                     box.checked = true;
@@ -399,7 +390,7 @@ require([
         },
 
         _selectAllBoxes: function (boxes) {
-            console.log('CheckboxSetSelector - (De)select all checkboxes');
+            console.debug('CheckboxSelector - (De)select all checkboxes');
             var self = this;
             array.forEach(boxes, function (box) {
                 if (self._data[self.id]._selectAllBox.checked) {
@@ -412,7 +403,7 @@ require([
         },
 
         _runReferences: function (boxes) {
-            console.log('CheckboxSetSelector - run references');
+            console.debug('CheckboxSelector - run references');
             var self = this,
                 referenceStr = this.reference.split('/')[0],
                 refguids = this._contextObj.getReferences(this.reference.split('/')[0]),
@@ -422,10 +413,10 @@ require([
                 array.forEach(boxes, function (box) {
                     id = domQuery(box).closest('tr')[0].id;
                     if (box.checked) {
-                        console.log('checked');
+                        console.debug('checked');
                         self._setAsReference();
                     } else {
-                        console.log('CheckboxSetSelector - Remove references');
+                        console.debug('CheckboxSelector - Remove references');
                         if (refguids) {
                             self._data[self.id]._contextObj.removeReferences(referenceStr, refguids);
                         }
@@ -433,10 +424,10 @@ require([
                 });
             } else {
                 if (boxes.checked) {
-                    console.log('checked');
+                    console.debug('checked');
                     this._setAsReference(domQuery(boxes).closest('tr')[0].id);
                 } else {
-                    console.log('CheckboxSetSelector - Remove references');
+                    console.debug('CheckboxSelector - Remove references');
                     this._contextObj.removeReferences(referenceStr, domQuery(boxes).closest('tr')[0].id);
 
                 }
@@ -450,7 +441,7 @@ require([
          */
 
         getReferencedBoxes: function () {
-            console.log('CheckboxSetSelector - get referenced boxes');
+            console.debug('CheckboxSelector - get referenced boxes');
             var refguids = this._contextObj.getReferences(this.reference.split('/')[0]),
                 boxes = [];
             if (refguids) {
@@ -479,7 +470,7 @@ require([
 
                 break;
             default:
-                console.log('Error: Currency type not found');
+                console.debug('Error: Currency type not found');
                 break;
                 // type not found
             }
