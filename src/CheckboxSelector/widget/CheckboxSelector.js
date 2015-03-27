@@ -4,11 +4,11 @@
 require([
     'dojo/_base/declare', 'mxui/widget/_WidgetBase', 'dijit/_TemplatedMixin',
     'mxui/dom', 'dojo/dom', 'dojo/query', 'dojo/dom-prop', 'dojo/dom-geometry', 'dojo/dom-class', 'dojo/dom-style', 'dojo/on', 'dojo/_base/lang', 'dojo/text',
-	'dojo/_base/array', 'dojo/dom-construct', 'dojo/text!CheckboxSelector/widget/template/CheckboxSelector.html', 'dojo/NodeList-traverse'
+    'dojo/_base/array', 'dojo/dom-construct', 'dojo/text!CheckboxSelector/widget/template/CheckboxSelector.html', 'dojo/NodeList-traverse'
 ], function (declare, _WidgetBase, _TemplatedMixin, domMx, dom, domQuery, domProp, domGeom, domClass, domStyle, on, lang, text, array, domConstruct, widgetTemplate) {
     'use strict';
     // Declare widget's prototype.
-	return declare('CheckboxSelector.widget.checkboxselector', [_WidgetBase, _TemplatedMixin], {
+    return declare('CheckboxSelector.widget.checkboxselector', [_WidgetBase, _TemplatedMixin], {
         // _TemplatedMixin will create our dom node using this HTML template.
         templateString: widgetTemplate,
         // General variables
@@ -18,6 +18,7 @@ require([
 
         // Extra variables
         _selectAllBox: null,
+        _readonly: null,
 
 
         /**
@@ -26,6 +27,7 @@ require([
          */
         constructor: function () {
             this._handles = [];
+            this._readonly = false;
         },
 
         // PostCreate is fired after the properties of the widget are set.
@@ -146,23 +148,29 @@ require([
         _setupEvents: function () {
 
             console.debug('CheckboxSelector - setup events');
-            if (this._selectAllBox && this.addSelectAll) {
-                on(domQuery('thead tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
+            if (!this.readOnly && !this._readonly) {
+                if (this._selectAllBox && this.addSelectAll) {
+                    on(domQuery('thead tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
 
-                    var tbody = domQuery('tbody', this._wgtNode)[0];
-                    //toggle all checkboxes when the row is clicked
-                    this._selectAllBoxes(domQuery('input', tbody));
-                }));
-            }
-            on(domQuery('tbody tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
-                if (event.target.tagName.toUpperCase() === 'INPUT') {
-                    this._runReferences(event.target);
-                } else {
-                    var row = domQuery(event.target).parent()[0];
-                    //toggle the checkbox when the row is clicked
-                    this._toggleCheckboxes(domQuery('input', row));
+                        var tbody = domQuery('tbody', this._wgtNode)[0];
+                        //toggle all checkboxes when the row is clicked
+                        this._selectAllBoxes(domQuery('input', tbody));
+                    }));
                 }
-            }));
+                on(domQuery('tbody tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
+                    if (event.target.tagName.toUpperCase() === 'INPUT') {
+                        this._runReferences(event.target);
+                    } else {
+                        var row = domQuery(event.target).parent()[0];
+                        //toggle the checkbox when the row is clicked
+                        this._toggleCheckboxes(domQuery('input', row));
+                    }
+                }));
+            } else {
+                //disable all checkboxes
+                this._setDisabled(domQuery('input', this.domNode));
+
+            }
 
         },
 
@@ -272,19 +280,15 @@ require([
                     domConstruct.place(td, row, 'last');
                 });
                 domConstruct.place(row, tbody);
-//				if(this.readOnly) {
-//					this._setDisabled(domQuery('input', row));
-//				}
             });
 
             this.getReferencedBoxes();
-			
+
             // Setup events
             this._setupEvents();
         },
 
         _fetchData: function (objs) {
-            
             var data = [],
                 finalLength = objs.length * this.displayAttrs.length,
                 self = this;
@@ -292,6 +296,10 @@ require([
             array.forEach(objs, function (obj) {
                 array.forEach(self.displayAttrs, function (attr, index) {
                     obj.fetch(attr.displayAttr, function (value) {
+                        //check if one of the references is read only - if so, make the selector read only.
+                        if (obj.isReadonlyAttr(attr.displayAttr.split('/')[0])) {
+                            self._readonly = true;
+                        }
                         if (typeof value === 'string') {
                             value = mxui.dom.escapeString(value);
                             value = value.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, ' Warning! Script tags not allowed. ');
@@ -312,16 +320,14 @@ require([
                     });
                 });
             });
-
-
         },
 
         _processData: function (data) {
-            
             var rowObjs = [],
                 rows = [],
                 headers = [];
 
+            //filter doubles
             array.forEach(data, function (item) {
                 if (array.indexOf(rowObjs, item.obj) === -1) {
                     rowObjs.push(item.obj);
@@ -339,16 +345,13 @@ require([
                             headers.splice(item.index, 0, item.header);
                         }
                     }
-
                 });
                 row.data = rowData;
-
                 array.forEach(headers, function (header) {
                     if (obj === header.id) {
                         row.header = header.header;
                     }
                 });
-
                 rows.push(row);
             });
             this._buildTemplate(rows, headers);
@@ -359,7 +362,7 @@ require([
          * ======================
          */
         _toggleCheckboxes: function (boxes) {
-            
+
             var self = this,
                 referenceStr = this.reference.split('/')[0],
                 refguids = this._contextObj.getReferences(referenceStr);
@@ -373,13 +376,13 @@ require([
             });
             this._runReferences(boxes);
         },
-		
-		_setDisabled : function(boxes) {
-			array.forEach(boxes, function (box) {
-				box.disabled = true;
-			});
-		},
-		
+
+        _setDisabled: function (boxes) {
+            array.forEach(boxes, function (box) {
+                box.disabled = true;
+            });
+        },
+
         _checkCheckboxes: function (boxes) {
             console.debug('CheckboxSelector - check checkboxes');
             array.forEach(boxes, function (box) {
@@ -456,17 +459,25 @@ require([
             var currency = value;
             switch (attr.currency) {
             case 'Euro':
-                currency = '&#8364 ' + mx.parser.formatValue(value, "currency", {places: attr.decimalPrecision});
+                currency = '&#8364 ' + mx.parser.formatValue(value, "currency", {
+                    places: attr.decimalPrecision
+                });
                 break;
             case 'Dollar':
-                currency = '&#36 ' + mx.parser.formatValue(value, "currency", {places: attr.decimalPrecision});
+                currency = '&#36 ' + mx.parser.formatValue(value, "currency", {
+                    places: attr.decimalPrecision
+                });
                 break;
             case 'Yen':
-                currency = '&#165 ' + mx.parser.formatValue(value, "currency", {places: attr.decimalPrecision});
+                currency = '&#165 ' + mx.parser.formatValue(value, "currency", {
+                    places: attr.decimalPrecision
+                });
 
                 break;
             case 'Pound':
-                currency = '&#163 ' + mx.parser.formatValue(value, "currency", {places: attr.decimalPrecision});
+                currency = '&#163 ' + mx.parser.formatValue(value, "currency", {
+                    places: attr.decimalPrecision
+                });
 
                 break;
             default:

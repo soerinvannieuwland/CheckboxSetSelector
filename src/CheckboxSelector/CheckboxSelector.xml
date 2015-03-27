@@ -42,6 +42,11 @@
             <category>Data source</category>
             <description>A limit for the amount of objects shown. 0 equals no limit.</description> 
         </property>
+        <property key="readOnly" type="boolean" defaultValue="false">
+            <caption>Read only</caption>
+            <category>Appearance</category>
+            <description>Setting to set the widget to read only.</description>
+        </property>
         <property key="displayAttrs" type="object" isList="true" required="false">
             <caption>Display attributes</caption>
             <category>Appearance</category>
