@@ -51,33 +51,19 @@ require([
             // update
             console.debug('CheckboxSelector - update');
 
-            // Release handle on previous object, if any.
-            if (this._handles) {
-                array.forEach(this._handles, function (handle, i) {
-                    mx.data.unsubscribe(handle);
-                });
-            }
-
-            if (typeof obj === 'string') {
-                var contextGuid = obj;
-                mx.data.get({
-                    guid: contextGuid,
-                    callback: lang.hitch(this, function (obj) {
-                        // Set the object as background.
-                        this._contextObj = obj;
-                    })
-                });
-            } else {
-                this._contextObj = obj;
-            }
+            this._contextObj = obj;
 
             if (this._contextObj === null) {
                 // Sorry no data no show!
                 console.debug('CheckboxSelector  - update - We did not get any context object!');
             } else {
-                // Subscribe to object updates.
+				
+				this._readonly = this._contextObj.isReadonlyAttr(this.reference.split('/')[0]);
+                
+				// Subscribe to object updates.
                 this._addSubscriptions();
-                // Load data
+                
+				// Load data
                 this._loadData();
             }
 
@@ -124,12 +110,15 @@ require([
 
             // To be able to just alter one variable in the future we set an internal variable with the domNode that this widget uses.
             this._wgtNode = this.domNode;
-            if (this.addSelectAll) {
+            
+			if (this.addSelectAll) {
                 console.debug('addSelectAll');
                 this._selectAllBox = domConstruct.create('input', {
                     type: 'checkbox'
                 });
 
+				
+				
                 console.debug(this._selectAllBox);
                 var firstTh = domQuery('.first-th', this._wgtNode)[0];
                 domConstruct.place(this._selectAllBox, firstTh);
@@ -175,24 +164,7 @@ require([
         },
 
         _addSubscriptions: function () {
-            console.debug('CheckboxSelector - Add subscriptions');
-            var subHandle = mx.data.subscribe({
-                guid: this._contextObj.getGuid(),
-                callback: lang.hitch(this, function (guid) {
-
-                    mx.data.get({
-                        guid: guid,
-                        callback: lang.hitch(this, function (obj) {
-
-                            // Set the object as background.
-                            this._contextObj = obj;
-
-                        })
-                    });
-
-                })
-            });
-            this._handles.push(subHandle);
+            
         },
 
         /**
@@ -296,10 +268,6 @@ require([
             array.forEach(objs, function (obj) {
                 array.forEach(self.displayAttrs, function (attr, index) {
                     obj.fetch(attr.displayAttr, function (value) {
-                        //check if one of the references is read only - if so, make the selector read only.
-                        if (obj.isReadonlyAttr(attr.displayAttr.split('/')[0])) {
-                            self._readonly = true;
-                        }
                         if (typeof value === 'string') {
                             value = mxui.dom.escapeString(value);
                             value = value.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, ' Warning! Script tags not allowed. ');
