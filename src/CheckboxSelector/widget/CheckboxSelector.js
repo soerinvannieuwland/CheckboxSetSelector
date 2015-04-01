@@ -61,16 +61,14 @@ require([
 				this._readonly = this._contextObj.isReadonlyAttr(this.reference.split('/')[0]);
                 
 				// Subscribe to object updates.
-                this._addSubscriptions();
+				this._resetSubscriptions();
                 
 				// Load data
                 this._loadData();
             }
 
-            // Execute callback.
-            if (typeof callback !== 'undefined') {
-                callback();
-            }
+            callback();
+            
         },
 
         /**
@@ -93,11 +91,6 @@ require([
         },
 
         unintialize: function () {
-            if (this._handles) {
-                array.forEach(this._handles, function (handle, i) {
-                    mx.data.unsubscribe(handle);
-                });
-            }
         },
 
 
@@ -116,8 +109,6 @@ require([
                 this._selectAllBox = domConstruct.create('input', {
                     type: 'checkbox'
                 });
-
-				
 				
                 console.debug(this._selectAllBox);
                 var firstTh = domQuery('.first-th', this._wgtNode)[0];
@@ -163,9 +154,72 @@ require([
 
         },
 
-        _addSubscriptions: function () {
-            
-        },
+		_resetSubscriptions: function () {
+			var entHandle = null, 
+				attrHandle = null, 
+				validationHandle = null;
+
+			// Release handles on previous object, if any.
+			if(this._handles){
+				this._handles.forEach(function (handle, i) {
+					mx.data.unsubscribe(handle);
+				});
+			}
+
+			if (this._contextObj) {
+				entHandle = this.subscribe({
+					entity: this.reference.split('/')[1],
+					callback: lang.hitch(this,function(guid) {
+						this._loadData();
+					})
+				});
+
+				attrHandle = this.subscribe({
+					guid: this._contextObj.getGuid(),
+					attr: this.reference.split('/')[0],
+					callback: lang.hitch(this,function(guid,attr,attrValue) {
+						this._loadData();
+					})
+				});
+
+				validationHandle = mx.data.subscribe({
+					guid     : this._contextObj.getGuid(),
+					val      : true,
+					callback : lang.hitch(this,this._handleValidation)
+				});
+
+				this._handles = [entHandle, attrHandle, validationHandle];
+			}
+		},
+		
+		_handleValidation: function(validations) {
+			this._clearValidations();
+
+			var val = validations[0],
+				msg = val.getReasonByAttribute(this.reference.split('/')[0]);    
+
+			if(this.readOnly){
+				val.removeAttribute(this.reference.split('/')[0]);
+			} else {                                
+				if (msg) {
+					this._addValidation(msg);
+					val.removeAttribute(this.reference.split('/')[0]);
+				}
+			}
+		},
+
+		_clearValidations: function() {
+			domConstruct.destroy(this._alertdiv);
+		},
+
+		_addValidation : function(msg) {
+			this._alertdiv = domConstruct.create("div", { 
+				class : 'alert alert-danger',
+				innerHTML: msg });
+
+			this.domNode.appendChild(this._alertdiv);
+
+		},
 
         /**
          * Interaction widget methods.
