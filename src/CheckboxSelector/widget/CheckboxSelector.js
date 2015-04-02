@@ -19,6 +19,7 @@ require([
         // Extra variables
         _selectAllBox: null,
         _readonly: null,
+		_firstTh: null,
 
 
         /**
@@ -54,10 +55,12 @@ require([
             this._contextObj = obj;
 
             if (this._contextObj === null) {
-                // Sorry no data no show!
+                
+				// Sorry no data no show!
+				domStyle.set(this.domNode, "display", "none");
                 console.debug('CheckboxSelector  - update - We did not get any context object!');
             } else {
-				
+				domStyle.set(this.domNode, "display", "initial");
 				this._readonly = this._contextObj.isReadonlyAttr(this.reference.split('/')[0]);
                 
 				// Subscribe to object updates.
@@ -103,7 +106,8 @@ require([
 
             // To be able to just alter one variable in the future we set an internal variable with the domNode that this widget uses.
             this._wgtNode = this.domNode;
-            
+			this._firstTh = domQuery('.first-th', this._wgtNode)[0];
+			
 			if (this.addSelectAll) {
                 console.debug('addSelectAll');
                 this._selectAllBox = domConstruct.create('input', {
@@ -111,8 +115,8 @@ require([
                 });
 				
                 console.debug(this._selectAllBox);
-                var firstTh = domQuery('.first-th', this._wgtNode)[0];
-                domConstruct.place(this._selectAllBox, firstTh);
+                
+				domConstruct.place(this._selectAllBox, this._firstTh);
             }
 
         },
@@ -228,27 +232,26 @@ require([
         _loadData: function () {
             console.debug('CheckboxSelector - Load data');
 
-            //default fetch
-            var refEntity = this.reference.split('/')[1],
-                filters = {},
-                xpath = '//' + refEntity;
+			//default fetch
+			var refEntity = this.reference.split('/')[1],
+				filters = {},
+				xpath = '//' + refEntity;
 
-            filters.sort = [[this.sortAttr, this.sortOrder]];
-            if (this.limit > 0) {
-                filters.amount = this.limit;
-            }
-            if (this.constraint) {
-                xpath = '//' + refEntity + this.constraint.replace('[%CurrentObject%]', this._contextObj);
-            }
-            mx.data.get({
-                xpath: xpath,
-                filter: filters,
-                callback: lang.hitch(this, function (objs) {
-                    this._fetchData(objs);
-                })
-            });
+			filters.sort = [[this.sortAttr, this.sortOrder]];
+			if (this.limit > 0) {
+				filters.amount = this.limit;
+			}
+			if (this.constraint) {
+				xpath = '//' + refEntity + this.constraint.replace('[%CurrentObject%]', this._contextObj);
+			}
+			mx.data.get({
+				xpath: xpath,
+				filter: filters,
+				callback: lang.hitch(this, function (objs) {
+					this._fetchData(objs);
+				})
+			});
 
-            // TODO, get aditional data from mendix.
         },
 
         _setAsReference: function (guid) {
@@ -287,26 +290,41 @@ require([
             var tbody = domQuery('tbody', this._wgtNode)[0],
                 thead = domQuery('thead tr', this._wgtNode)[0];
             //empty the table
-            domConstruct.empty(tbody);
+			domConstruct.empty(tbody);
+			domConstruct.empty(thead);
+			
+			domConstruct.place(this._firstTh, thead, 'first'); 
 
-            array.forEach(headers, function (header) {
+			array.forEach(headers, function (header) {
                 var th = domConstruct.create('th', {
                     innerHTML: header
                 });
                 domConstruct.place(th, thead, 'last');
             });
 
-            array.forEach(rows, function (rowData) {
-                var row = domConstruct.toDom(dojo.cache('CheckboxSelector.widget', 'template/CheckboxSelector_row.html'));
-                row.id = rowData.id;
+            array.forEach(rows, lang.hitch(this, function (rowData) {
+                
+				var row = domConstruct.create('tr', { 
+					id : this.domNode.id + '_' + rowData.id
+					}
+				);
+				var checkboxtd = domConstruct.create('td');
+				var input = domConstruct.create('input', {
+					type : 'checkbox',
+					value : rowData.id
+				});
+
+				domConstruct.place(input, checkboxtd);
+				domConstruct.place(checkboxtd, row);
+				
                 array.forEach(rowData.data, function (value) {
-                    var td = domConstruct.create('td', {
-                        innerHTML: value
-                    });
-                    domConstruct.place(td, row, 'last');
+					var td = domConstruct.create('td', {
+						innerHTML: value
+					});
+					domConstruct.place(td, row, 'last');
                 });
                 domConstruct.place(row, tbody);
-            });
+            }));
 
             this.getReferencedBoxes();
 
@@ -316,18 +334,17 @@ require([
 
         _fetchData: function (objs) {
             var data = [],
-                finalLength = objs.length * this.displayAttrs.length,
-                self = this;
+                finalLength = objs.length * this.displayAttrs.length;
 
-            array.forEach(objs, function (obj) {
-                array.forEach(self.displayAttrs, function (attr, index) {
-                    obj.fetch(attr.displayAttr, function (value) {
+            array.forEach(objs, lang.hitch( this, function (obj) {
+				array.forEach(this.displayAttrs, lang.hitch(this, function (attr, index) {
+					obj.fetch(attr.displayAttr, lang.hitch(this, function (value) {
                         if (typeof value === 'string') {
                             value = mxui.dom.escapeString(value);
                             value = value.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gm, ' Warning! Script tags not allowed. ');
                         }
                         if (attr.currency !== "None") {
-                            value = self._parseCurrency(value, attr);
+							value = this._parseCurrency(value, attr);
                         }
 
                         data.push({
@@ -337,11 +354,11 @@ require([
                             'header': attr.header
                         });
                         if (data.length === finalLength) {
-                            self._processData(data);
+							this._processData(data);
                         }
-                    });
-                });
-            });
+                    }));
+                }));
+            }));
         },
 
         _processData: function (data) {
@@ -436,7 +453,7 @@ require([
 
             if (Array.isArray(boxes)) {
                 array.forEach(boxes, function (box) {
-                    id = domQuery(box).closest('tr')[0].id;
+                    id = box.value;
                     if (box.checked) {
                         console.debug('checked');
                         self._setAsReference();
@@ -450,10 +467,10 @@ require([
             } else {
                 if (boxes.checked) {
                     console.debug('checked');
-                    this._setAsReference(domQuery(boxes).closest('tr')[0].id);
+					this._setAsReference(boxes.value);
                 } else {
                     console.debug('CheckboxSelector - Remove references');
-                    this._contextObj.removeReferences(referenceStr, domQuery(boxes).closest('tr')[0].id);
+                    this._contextObj.removeReferences(referenceStr, boxes.value);
 
                 }
             }
@@ -470,9 +487,9 @@ require([
             var refguids = this._contextObj.getReferences(this.reference.split('/')[0]),
                 boxes = [];
             if (refguids) {
-                array.forEach(refguids, function (id) {
-                    boxes.push(domQuery('#' + id + ' input[type=checkbox]')[0]);
-                });
+                array.forEach(refguids, lang.hitch(this, function (id) {
+                    boxes.push(domQuery('#' + this.domNode.id + '_' + id + ' input[type=checkbox]')[0]);
+                }));
             }
             this._checkCheckboxes(boxes);
         },
