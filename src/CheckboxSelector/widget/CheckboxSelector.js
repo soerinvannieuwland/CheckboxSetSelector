@@ -197,7 +197,6 @@ require([
 		},
 		
 		_handleValidation: function(validations) {
-			this._clearValidations();
 
 			var val = validations[0],
 				msg = val.getReasonByAttribute(this.reference.split('/')[0]);    
@@ -231,6 +230,8 @@ require([
          */
         _loadData: function () {
             console.debug('CheckboxSelector - Load data');
+			
+			this._clearValidations();
 
 			//default fetch
 			var refEntity = this.reference.split('/')[1],
