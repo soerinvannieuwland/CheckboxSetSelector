@@ -159,6 +159,7 @@ require([
 
         _resetSubscriptions: function () {
             var entHandle = null,
+				objHandle = null,
                 attrHandle = null,
                 validationHandle = null;
 
@@ -172,11 +173,18 @@ require([
             if (this._contextObj) {
                 entHandle = this.subscribe({
                     entity: this.reference.split('/')[1],
-                    callback: lang.hitch(this, function (guid) {
+                    callback: lang.hitch(this, function () {
                         this._loadData();
                     })
                 });
 
+				objHandle = this.subscribe({
+					guid: this._contextObj.getGuid(),
+					callback: lang.hitch(this, function (guid) {
+						this._loadData();
+					})
+				});
+				
                 attrHandle = this.subscribe({
                     guid: this._contextObj.getGuid(),
                     attr: this.reference.split('/')[0],
@@ -191,7 +199,7 @@ require([
                     callback: lang.hitch(this, this._handleValidation)
                 });
 
-                this._handles = [entHandle, attrHandle, validationHandle];
+                this._handles = [entHandle, objHandle, attrHandle, validationHandle];
             }
         },
 
@@ -490,7 +498,13 @@ require([
                 boxes = [];
             if (refguids) {
                 array.forEach(refguids, lang.hitch(this, function (id) {
-                    boxes.push(domQuery('#' + this.domNode.id + '_' + id + ' input[type=checkbox]')[0]);
+					
+					var inputNode = domQuery('#' + this.domNode.id + '_' + id + ' input[type=checkbox]')[0];
+					
+					if(typeof inputNode !== 'undefined')
+					{
+						boxes.push(inputNode);
+					}
                 }));
             }
             this._checkCheckboxes(boxes);
