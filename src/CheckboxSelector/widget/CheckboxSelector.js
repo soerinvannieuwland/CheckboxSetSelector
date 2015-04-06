@@ -232,12 +232,17 @@ require([
 
 			domConstruct.place(this._firstTh, thead, 'first');
 
-			array.forEach(headers, function (header) {
-				var th = domConstruct.create('th', {
-					innerHTML: header
-				});
-				domConstruct.place(th, thead, 'last');
-			});
+			for( var i = 0; i<headers.length;i++ ) {
+				var headerPos=i+1;
+				if( thead.children.length > headerPos ) 
+					thead.children[headerPos].innerHTML = headers[i];
+				else {
+					var th = domConstruct.create('th', {
+						innerHTML: headers[i]
+					});
+					domConstruct.place(th, thead, 'last');
+				} 
+			}
 
 			array.forEach(rows, lang.hitch(this, function (rowData) {
 
