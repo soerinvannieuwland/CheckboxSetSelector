@@ -120,6 +120,14 @@ require([
 				console.debug(this._selectAllBox);
 
 				domConstruct.place(this._selectAllBox, this._firstTh);
+				
+				//Add the onclick event on the SelectAll checkbox
+				on(this._selectAllBox, 'click', lang.hitch(this, function (event) {
+
+					var tbody = domQuery('tbody', this._wgtNode)[0];
+					//toggle all checkboxes when the row is clicked
+					this._selectAllBoxes(domQuery('input', tbody));
+				}));
 			}
 
 		},
@@ -136,14 +144,6 @@ require([
 
 			console.debug('CheckboxSelector - setup events');
 			if (!this.readOnly && !this._readonly) {
-				if (this._selectAllBox && this.addSelectAll) {
-					on(domQuery('thead tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
-
-						var tbody = domQuery('tbody', this._wgtNode)[0];
-						//toggle all checkboxes when the row is clicked
-						this._selectAllBoxes(domQuery('input', tbody));
-					}));
-				}
 				on(domQuery('tbody tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
 					if (event.target.tagName.toUpperCase() === 'INPUT') {
 						this._setReference(event.target);
@@ -229,7 +229,6 @@ require([
 				thead = domQuery('thead tr', this._wgtNode)[0];
 			//empty the table
 			domConstruct.empty(tbody);
-			domConstruct.empty(thead);
 
 			domConstruct.place(this._firstTh, thead, 'first');
 
@@ -504,6 +503,7 @@ require([
 					})
 				});
 
+/*
 				attrHandle = this.subscribe({
 					guid: this._contextObj.getGuid(),
 					attr: this.reference.split('/')[0],
@@ -511,6 +511,7 @@ require([
 						this._loadData();
 					})
 				});
+*/
 
 				validationHandle = mx.data.subscribe({
 					guid: this._contextObj.getGuid(),
