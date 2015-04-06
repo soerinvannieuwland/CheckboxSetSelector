@@ -38,10 +38,6 @@ require([
 
 			// Setup widgets
 			this._setupWidget();
-
-			// Create childnodes
-			this._createChildNodes();
-
 		},
 
 		/**
@@ -132,13 +128,6 @@ require([
 
 		},
 
-		// Create child nodes.
-		_createChildNodes: function () {
-
-			// Assigning externally loaded library to internal variable inside function.
-			console.debug('CheckboxSelector - createChildNodes events');
-		},
-
 		// Attach events to newly created nodes.
 		_setupEvents: function () {
 
@@ -146,6 +135,10 @@ require([
 			if (!this.readOnly && !this._readonly) {
 				on(domQuery('tbody tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
 					if (event.target.tagName.toUpperCase() === 'INPUT') {
+						
+						//Evaluate if the value of the select all box needs to change
+						this._evaluateSelectAllBox( event.target );
+						
 						this._setReference(event.target);
 						this._execMf(this.onChangeMf, [this._contextObj.getGuid()]);
 					} else {
@@ -357,11 +350,21 @@ require([
 
 		
 		_toggleCheckbox: function (box) {
-
 			if (box.checked) {
 				box.checked = false;
+				this._evaluateSelectAllBox( box );
 			} else {
 				box.checked = true;
+			}
+		},
+		
+		/**
+		 * Evaluate if the value of the select all box needs to change
+		 */
+		_evaluateSelectAllBox: function ( box ) {
+			if( box.checked == false ) {
+				if (this.addSelectAll && this._selectAllBox.checked) 
+					this._selectAllBox.checked = false;
 			}
 		},
 		
