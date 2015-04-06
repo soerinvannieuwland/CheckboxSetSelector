@@ -147,6 +147,7 @@ require([
 				on(domQuery('tbody tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
 					if (event.target.tagName.toUpperCase() === 'INPUT') {
 						this._setReference(event.target);
+						this._execMf(this.onChangeMf, [this._contextObj.getGuid()]);
 					} else {
 						var row = domQuery(event.target).parent()[0];
 						//toggle the checkbox when the row is clicked
