@@ -260,7 +260,7 @@ require([
 				domConstruct.place(row, tbody);
 			}));
 
-			this.getReferencedBoxes();
+			this._setReferencedBoxes(this._contextObj.getReferences(this.reference.split('/')[0]));
 
 			// Setup events
 			this._setupEvents();
@@ -338,9 +338,6 @@ require([
 		 */
 		_toggleCheckboxes: function (boxes) {
 
-			//                referenceStr = this.reference.split('/')[0],
-			//                refguids = this._contextObj.getReferences(referenceStr);
-
 			array.forEach(boxes, lang.hitch(this, function(node) { 
 				this._toggleCheckbox(node);
 			}));
@@ -385,15 +382,15 @@ require([
 
 		_selectAllBoxes: function (boxes) {
 			console.debug('CheckboxSelector - (De)select all checkboxes');
-			var self = this;
-			array.forEach(boxes, function (box) {
-				if (self._selectAllBox.checked) {
+			
+			array.forEach(boxes, lang.hitch(this, function (box) {
+				if (this._selectAllBox.checked) {
 					box.checked = true;
 				} else {
 					box.checked = false;
 				}
-			});
-			this._setReferences(boxes);
+				this._setReference(box);
+			}));
 		},
 
 		_setReferences: function (boxes) {
@@ -424,14 +421,13 @@ require([
 		 * ======================
 		 */
 
-		getReferencedBoxes: function () {
-			console.debug('CheckboxSelector - get referenced boxes');
-			var refguids = this._contextObj.getReferences(this.reference.split('/')[0]),
-				boxes = [];
-			if (refguids) {
-				array.forEach(refguids, lang.hitch(this, function (id) {
+		_setReferencedBoxes: function (guids) {
+			
+			var boxes = [];
+			if (guids) {
+				array.forEach(guids, lang.hitch(this, function (guid) {
 
-					var inputNode = domQuery('#' + this.domNode.id + '_' + id + ' input[type=checkbox]')[0];
+					var inputNode = domQuery('#' + this.domNode.id + '_' + guid + ' input[type=checkbox]')[0];
 
 					if (typeof inputNode !== 'undefined') {
 						boxes.push(inputNode);
@@ -506,15 +502,14 @@ require([
 					})
 				});
 
-/*
 				attrHandle = this.subscribe({
 					guid: this._contextObj.getGuid(),
 					attr: this.reference.split('/')[0],
 					callback: lang.hitch(this, function (guid, attr, attrValue) {
-						this._loadData();
+						
+						this._setReferencedBoxes(attrValue);
 					})
 				});
-*/
 
 				validationHandle = mx.data.subscribe({
 					guid: this._contextObj.getGuid(),
