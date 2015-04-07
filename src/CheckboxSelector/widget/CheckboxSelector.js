@@ -38,10 +38,6 @@ require([
 
 			// Setup widgets
 			this._setupWidget();
-
-			// Create childnodes
-			this._createChildNodes();
-
 		},
 
 		/**
@@ -120,15 +116,16 @@ require([
 				console.debug(this._selectAllBox);
 
 				domConstruct.place(this._selectAllBox, this._firstTh);
+				
+				//Add the onclick event on the SelectAll checkbox
+				on(this._selectAllBox, 'click', lang.hitch(this, function (event) {
+
+					var tbody = domQuery('tbody', this._wgtNode)[0];
+					//toggle all checkboxes when the row is clicked
+					this._selectAllBoxes(domQuery('input', tbody));
+				}));
 			}
 
-		},
-
-		// Create child nodes.
-		_createChildNodes: function () {
-
-			// Assigning externally loaded library to internal variable inside function.
-			console.debug('CheckboxSelector - createChildNodes events');
 		},
 
 		// Attach events to newly created nodes.
@@ -136,17 +133,14 @@ require([
 
 			console.debug('CheckboxSelector - setup events');
 			if (!this.readOnly && !this._readonly) {
-				if (this._selectAllBox && this.addSelectAll) {
-					on(domQuery('thead tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
-
-						var tbody = domQuery('tbody', this._wgtNode)[0];
-						//toggle all checkboxes when the row is clicked
-						this._selectAllBoxes(domQuery('input', tbody));
-					}));
-				}
 				on(domQuery('tbody tr', this._wgtNode), 'click', lang.hitch(this, function (event) {
 					if (event.target.tagName.toUpperCase() === 'INPUT') {
+						
+						//Evaluate if the value of the select all box needs to change
+						this._evaluateSelectAllBox( event.target );
+						
 						this._setReference(event.target);
+						this._execMf(this.onChangeMf, [this._contextObj.getGuid()]);
 					} else {
 						var row = domQuery(event.target).parent()[0];
 						//toggle the checkbox when the row is clicked
@@ -228,16 +222,20 @@ require([
 				thead = domQuery('thead tr', this._wgtNode)[0];
 			//empty the table
 			domConstruct.empty(tbody);
-			domConstruct.empty(thead);
 
 			domConstruct.place(this._firstTh, thead, 'first');
 
-			array.forEach(headers, function (header) {
-				var th = domConstruct.create('th', {
-					innerHTML: header
-				});
-				domConstruct.place(th, thead, 'last');
-			});
+			for( var i = 0; i<headers.length;i++ ) {
+				var headerPos=i+1;
+				if( thead.children.length > headerPos ) 
+					thead.children[headerPos].innerHTML = headers[i];
+				else {
+					var th = domConstruct.create('th', {
+						innerHTML: headers[i]
+					});
+					domConstruct.place(th, thead, 'last');
+				} 
+			}
 
 			array.forEach(rows, lang.hitch(this, function (rowData) {
 
@@ -352,11 +350,21 @@ require([
 
 		
 		_toggleCheckbox: function (box) {
-
 			if (box.checked) {
 				box.checked = false;
+				this._evaluateSelectAllBox( box );
 			} else {
 				box.checked = true;
+			}
+		},
+		
+		/**
+		 * Evaluate if the value of the select all box needs to change
+		 */
+		_evaluateSelectAllBox: function ( box ) {
+			if( box.checked == false ) {
+				if (this.addSelectAll && this._selectAllBox.checked) 
+					this._selectAllBox.checked = false;
 			}
 		},
 		
@@ -498,6 +506,7 @@ require([
 					})
 				});
 
+/*
 				attrHandle = this.subscribe({
 					guid: this._contextObj.getGuid(),
 					attr: this.reference.split('/')[0],
@@ -505,6 +514,7 @@ require([
 						this._loadData();
 					})
 				});
+*/
 
 				validationHandle = mx.data.subscribe({
 					guid: this._contextObj.getGuid(),
