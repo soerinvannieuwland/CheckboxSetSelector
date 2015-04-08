@@ -21,8 +21,6 @@ require([
 		_readonly: null,
 		_firstTh: null,
 		_referencePath : null,
-		_references : null,
-		
 
 		/**
 		 * Mendix Widget methods.
@@ -58,7 +56,6 @@ require([
 			} else {
 				domStyle.set(this.domNode, "display", "initial");
 				
-				this._references = this._contextObj.getReferences(this.reference.split('/')[0]);
 				this._readonly = this._contextObj.isReadonlyAttr(this._referencePath);
 
 				// Subscribe to object updates.
@@ -192,8 +189,8 @@ require([
 		},
 
 		_execMf: function (mf, guids) {
-			console.debug('CheckboxSelector - Execute MF with guids: ', guids);
 			if (mf && guids) {
+				console.debug('CheckboxSelector - Execute MF with guids: ', guids);
 				mx.data.action({
 					params: {
 						applyto: 'selection',
@@ -359,7 +356,7 @@ require([
 		 * Evaluate if the value of the select all box needs to change
 		 */
 		_evaluateSelectAllBox: function ( box ) {
-			if( box.checked == false ) {
+			if( box.checked === false ) {
 				if (this.addSelectAll && this._selectAllBox.checked) 
 					this._selectAllBox.checked = false;
 			}
@@ -368,15 +365,6 @@ require([
 		_setDisabled: function (boxes) {
 			array.forEach(boxes, function (box) {
 				box.disabled = true;
-			});
-		},
-
-		_checkCheckboxes: function (boxes) {
-			console.debug('CheckboxSelector - check checkboxes');
-			array.forEach(boxes, function (box) {
-				if (!box.checked) {
-					box.checked = true;
-				}
 			});
 		},
 
@@ -424,17 +412,18 @@ require([
 		_setReferencedBoxes: function (guids) {
 			
 			var boxes = [];
-			if (guids) {
-				array.forEach(guids, lang.hitch(this, function (guid) {
-
-					var inputNode = domQuery('#' + this.domNode.id + '_' + guid + ' input[type=checkbox]')[0];
-
-					if (typeof inputNode !== 'undefined') {
-						boxes.push(inputNode);
-					}
-				}));
-			}
-			this._checkCheckboxes(boxes);
+			
+			var inputNodes = domQuery('input[value]', this.domNode);
+			
+			array.forEach(inputNodes, lang.hitch(this, function(inputNode) {
+				if(guids.indexOf(inputNode.value) > -1) {
+					inputNode.checked = true;
+				}
+				else if(inputNode.checked === true) {
+					inputNode.checked = false;
+					this._evaluateSelectAllBox(inputNode);
+				}
+			}));
 		},
 
 		_parseCurrency: function (value, attr) {
