@@ -51,10 +51,10 @@ require([
 			if (this._contextObj === null) {
 
 				// Sorry no data no show!
-				domStyle.set(this.domNode, "display", "none");
+				domStyle.set(this.domNode, "visibility", "hidden");
 				console.debug('CheckboxSelector  - update - We did not get any context object!');
 			} else {
-				domStyle.set(this.domNode, "display", "initial");
+				domStyle.set(this.domNode, "visibility", "visible");
 				
 				this._readonly = this._contextObj.isReadonlyAttr(this._referencePath);
 
