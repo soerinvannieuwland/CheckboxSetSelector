@@ -398,8 +398,11 @@ require([
 		_setReference : function (box) {
 			if (box.checked) {
 				this._setAsReference(box.value);
+                box.parentNode.parentNode.className = box.parentNode.parentNode.className + " selected";
 			} else {
 				this._contextObj.removeReferences(this._referencePath, box.value);
+                box.parentNode.parentNode.classList.remove("selected");
+              
 			}	
 		},
 		
@@ -418,6 +421,7 @@ require([
 			array.forEach(inputNodes, lang.hitch(this, function(inputNode) {
 				if(guids.indexOf(inputNode.value) > -1) {
 					inputNode.checked = true;
+                    inputNode.parentNode.parentNode.className = inputNode.parentNode.parentNode.className + " selected";
 				}
 				else if(inputNode.checked === true) {
 					inputNode.checked = false;
